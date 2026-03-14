@@ -70,6 +70,12 @@ export default function HomePage() {
                 Launch Platform
               </Link>
               <Link
+                href="/pricing"
+                className="rounded-full border border-white/25 bg-white/5 px-6 py-3 text-sm font-semibold text-white backdrop-blur"
+              >
+                View Pricing
+              </Link>
+              <Link
                 href="/#platform"
                 className="rounded-full border border-white/25 bg-white/5 px-6 py-3 text-sm font-semibold text-white backdrop-blur"
               >

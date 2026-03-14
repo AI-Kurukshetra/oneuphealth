@@ -18,6 +18,7 @@ const appNavigation = [
 
 const publicNavigation = [
   { href: "/", label: "Home" },
+  { href: "/pricing", label: "Pricing" },
   { href: "/#platform", label: "Platform" },
   { href: "/#security", label: "Security" },
   { href: "/#developer", label: "Developer APIs" },
