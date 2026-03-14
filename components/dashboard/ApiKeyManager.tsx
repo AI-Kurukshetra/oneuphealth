@@ -10,7 +10,14 @@ interface ApiKeyManagerProps {
 export function ApiKeyManager({ apiKeys }: ApiKeyManagerProps) {
   return (
     <Card className="p-6 lg:p-7">
-      <h3 className="text-lg font-semibold text-ink">Developer API Keys</h3>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h3 className="text-lg font-semibold text-ink">Developer API Keys</h3>
+          <p className="mt-2 text-sm leading-6 text-slate-500">
+            Stored records only keep the key prefix and hash. Full tokens are shown only when a key is created.
+          </p>
+        </div>
+      </div>
       <div className="mt-6 space-y-4">
         {apiKeys.map((apiKey) => (
           <div key={apiKey.id} className="rounded-2xl border border-line p-4">

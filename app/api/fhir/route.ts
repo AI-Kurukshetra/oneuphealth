@@ -1,9 +1,14 @@
 import { ok } from "@/lib/api";
+import { fhirResourceRegistry, implementedFhirResourceTypes } from "@/lib/fhir/registry";
 
 export async function GET() {
   return ok({
     data: {
-      resourceTypes: ["Patient", "Observation", "Encounter", "Condition", "Medication", "Procedure", "Claim", "Consent"],
+      resourceTypes: implementedFhirResourceTypes,
+      operations: implementedFhirResourceTypes.reduce<Record<string, string[]>>((accumulator, type) => {
+        accumulator[type] = fhirResourceRegistry[type].operations;
+        return accumulator;
+      }, {}),
     },
   });
 }

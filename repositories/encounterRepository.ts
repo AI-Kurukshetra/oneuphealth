@@ -72,4 +72,68 @@ export const encounterRepository = {
 
     return data as Encounter;
   },
+
+  async update(
+    organizationId: string,
+    id: string,
+    payload: Partial<Omit<Encounter, "id" | "organization_id" | "created_at">>,
+  ) {
+    const supabase = createSupabaseAdminClient();
+
+    if (!supabase) {
+      const encounter = mockEncounters.find(
+        (record) => record.organization_id === organizationId && record.id === id,
+      );
+
+      if (!encounter) {
+        return null;
+      }
+
+      Object.assign(encounter, payload);
+      return encounter;
+    }
+
+    const { data, error } = await supabase
+      .from("encounters")
+      .update(payload)
+      .eq("organization_id", organizationId)
+      .eq("id", id)
+      .select("*")
+      .maybeSingle();
+
+    if (error) {
+      throw error;
+    }
+
+    return (data as Encounter | null) ?? null;
+  },
+
+  async delete(organizationId: string, id: string) {
+    const supabase = createSupabaseAdminClient();
+
+    if (!supabase) {
+      const index = mockEncounters.findIndex(
+        (record) => record.organization_id === organizationId && record.id === id,
+      );
+
+      if (index < 0) {
+        return false;
+      }
+
+      mockEncounters.splice(index, 1);
+      return true;
+    }
+
+    const { error, count } = await supabase
+      .from("encounters")
+      .delete({ count: "exact" })
+      .eq("organization_id", organizationId)
+      .eq("id", id);
+
+    if (error) {
+      throw error;
+    }
+
+    return (count ?? 0) > 0;
+  },
 };

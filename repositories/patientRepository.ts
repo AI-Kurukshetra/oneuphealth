@@ -107,4 +107,33 @@ export const patientRepository = {
 
     return (data as Patient | null) ?? null;
   },
+
+  async delete(organizationId: string, id: string) {
+    const supabase = createSupabaseAdminClient();
+
+    if (!supabase) {
+      const index = mockPatients.findIndex(
+        (record) => record.organization_id === organizationId && record.id === id,
+      );
+
+      if (index < 0) {
+        return false;
+      }
+
+      mockPatients.splice(index, 1);
+      return true;
+    }
+
+    const { error, count } = await supabase
+      .from("patients")
+      .delete({ count: "exact" })
+      .eq("organization_id", organizationId)
+      .eq("id", id);
+
+    if (error) {
+      throw error;
+    }
+
+    return (count ?? 0) > 0;
+  },
 };

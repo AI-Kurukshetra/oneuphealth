@@ -107,4 +107,33 @@ export const consentRepository = {
 
     return (data as Consent | null) ?? null;
   },
+
+  async delete(organizationId: string, id: string) {
+    const supabase = createSupabaseAdminClient();
+
+    if (!supabase) {
+      const index = mockConsents.findIndex(
+        (record) => record.organization_id === organizationId && record.id === id,
+      );
+
+      if (index < 0) {
+        return false;
+      }
+
+      mockConsents.splice(index, 1);
+      return true;
+    }
+
+    const { error, count } = await supabase
+      .from("consents")
+      .delete({ count: "exact" })
+      .eq("organization_id", organizationId)
+      .eq("id", id);
+
+    if (error) {
+      throw error;
+    }
+
+    return (count ?? 0) > 0;
+  },
 };

@@ -72,4 +72,68 @@ export const observationRepository = {
 
     return data as Observation;
   },
+
+  async update(
+    organizationId: string,
+    id: string,
+    payload: Partial<Omit<Observation, "id" | "organization_id" | "created_at">>,
+  ) {
+    const supabase = createSupabaseAdminClient();
+
+    if (!supabase) {
+      const observation = mockObservations.find(
+        (record) => record.organization_id === organizationId && record.id === id,
+      );
+
+      if (!observation) {
+        return null;
+      }
+
+      Object.assign(observation, payload);
+      return observation;
+    }
+
+    const { data, error } = await supabase
+      .from("observations")
+      .update(payload)
+      .eq("organization_id", organizationId)
+      .eq("id", id)
+      .select("*")
+      .maybeSingle();
+
+    if (error) {
+      throw error;
+    }
+
+    return (data as Observation | null) ?? null;
+  },
+
+  async delete(organizationId: string, id: string) {
+    const supabase = createSupabaseAdminClient();
+
+    if (!supabase) {
+      const index = mockObservations.findIndex(
+        (record) => record.organization_id === organizationId && record.id === id,
+      );
+
+      if (index < 0) {
+        return false;
+      }
+
+      mockObservations.splice(index, 1);
+      return true;
+    }
+
+    const { error, count } = await supabase
+      .from("observations")
+      .delete({ count: "exact" })
+      .eq("organization_id", organizationId)
+      .eq("id", id);
+
+    if (error) {
+      throw error;
+    }
+
+    return (count ?? 0) > 0;
+  },
 };

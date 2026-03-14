@@ -61,28 +61,53 @@ All endpoints return JSON. Authentication is provided by Supabase Auth sessions 
 - list consent records
 
 `POST /api/consent`
-- create or update patient consent
+- create consent record
+- roles: `admin`, `provider`
+
+`GET /api/consent/:id`
+- retrieve a consent record
+
+`PUT /api/consent/:id`
+- update a consent record
 - roles: `admin`, `provider`
 
 ## FHIR
 
-`GET /api/fhir/Patient/:id`
-- return canonical FHIR Patient resource
+`GET /api/fhir`
+- list implemented FHIR resource types and supported operations
 
-`POST /api/fhir/Patient`
-- create FHIR Patient resource
+Currently implemented FHIR resource types:
 
-`GET /api/fhir/Observation`
-- list Observation resources
+- `Patient`
+- `Observation`
+- `Encounter`
+- `Consent`
 
-`POST /api/fhir/Observation`
-- create Observation resource
+`GET /api/fhir/:resourceType`
+- return a FHIR `Bundle` for the implemented resource type
 
-`GET /api/fhir/Encounter`
-- list Encounter resources
+`POST /api/fhir/:resourceType`
+- create a canonical FHIR resource for the implemented resource type
+- roles: `admin`, `provider`, `developer`
 
-`POST /api/fhir/Encounter`
-- create Encounter resource
+`GET /api/fhir/:resourceType/:id`
+- return the native FHIR resource body for the given FHIR `resource.id`
+
+`PUT /api/fhir/:resourceType/:id`
+- update the canonical FHIR resource and sync the operational record
+- roles: `admin`, `provider`, `developer`
+
+`DELETE /api/fhir/:resourceType/:id`
+- delete the canonical FHIR resource and delete the operational record when safe
+- roles: `admin`, `provider`, `developer`
+
+Notes:
+
+- FHIR collection responses are returned as native `Bundle` payloads
+- single-resource reads are returned as native FHIR resource bodies
+- unsupported resource types return `501 not implemented`
+- patient deletion is blocked when dependent encounters, observations, or consents still reference the patient
+- encounter deletion is blocked when observations still reference the encounter
 
 ## Webhooks
 
@@ -95,6 +120,8 @@ All endpoints return JSON. Authentication is provided by Supabase Auth sessions 
   - `patient.updated`
   - `patient.deleted`
   - `fhir.resource.created`
+  - `fhir.resource.updated`
+  - `fhir.resource.deleted`
 
 ## Analytics
 

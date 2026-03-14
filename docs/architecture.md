@@ -13,6 +13,25 @@ Primary goals:
 - expose developer APIs and webhooks
 - produce immutable audit trails
 
+## Current Implementation Reality
+
+Implemented today:
+
+- tenant-aware authentication and role enforcement
+- organization-scoped RLS policies
+- canonical FHIR storage for supported resources
+- operational workflows for patients, providers, consents, encounters, and observations
+- dashboard, analytics, developer API key management, and webhook registration
+
+Still missing or partial:
+
+- external EHR aggregation connectors
+- completed payer-provider exchange workflow
+- full FHIR gateway semantics for all advertised resource types
+- complete consent lifecycle and compliance evidence
+
+The platform should be treated as an interoperability scaffold approaching MVP, not a fully complete interoperability network.
+
 ## Logical Layers
 
 Presentation layer:
@@ -82,13 +101,20 @@ Authorization roles:
 - `payer`
 - `developer`
 
-Security controls:
+Security controls currently present:
 
 - RLS for tenant isolation
 - server-side role checks
 - hashed API keys
-- audit logging for all writes
-- signed webhook delivery in later phases
+- audit logging for writes
+- basic webhook dispatch
+
+Security controls still required for stronger compliance posture:
+
+- explicit webhook secrets/signatures
+- operational security runbooks
+- compliance control mapping
+- stronger exchange observability
 
 ## FHIR Strategy
 
@@ -97,16 +123,19 @@ The platform uses a hybrid model:
 - relational tables for operational querying
 - `fhir_resources` for canonical JSON payloads
 
-Supported resource types:
+Resource types currently implemented in route and service flows:
 
 - Patient
 - Observation
 - Encounter
+- Consent through service-layer generation and storage
+
+Resource types present in shared types but not fully implemented end-to-end:
+
 - Condition
 - Medication
 - Procedure
 - Claim
-- Consent
 
 Operational rows reference canonical FHIR storage where appropriate. The canonical FHIR record is the interoperability source of truth.
 
@@ -116,6 +145,21 @@ Operational rows reference canonical FHIR storage where appropriate. The canonic
 - `analyticsService`: aggregate operational metrics
 - `webhookService`: event fan-out for subscribers
 - `fhirService`: validation, normalization, and persistence of FHIR resources
+
+## Delivery Gap
+
+To satisfy the stated MVP, the architecture still needs:
+
+- a connector framework for external healthcare system ingestion
+- a payer-facing exchange layer
+- stronger FHIR gateway semantics including generic CRUD and search behavior
+- consent revocation/history enforcement
+- stronger documentation and test coverage
+
+Detailed remediation work is tracked in:
+
+- `docs/mvp-remediation-roadmap.md`
+- `docs/phase-plan.md`
 
 ## Deployment Assumptions
 

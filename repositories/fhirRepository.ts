@@ -58,6 +58,35 @@ export const fhirRepository = {
     return (data as FhirResourceRecord | null) ?? null;
   },
 
+  async getByResourceId(organizationId: string, resourceType: FhirResourceType, resourceId: string) {
+    const supabase = createSupabaseAdminClient();
+
+    if (!supabase) {
+      return (
+        mockFhirResources.find(
+          (resource) =>
+            resource.organization_id === organizationId &&
+            resource.resource_type === resourceType &&
+            resource.resource.id === resourceId,
+        ) ?? null
+      );
+    }
+
+    const { data, error } = await supabase
+      .from("fhir_resources")
+      .select("*")
+      .eq("organization_id", organizationId)
+      .eq("resource_type", resourceType)
+      .filter("resource->>id", "eq", resourceId)
+      .maybeSingle();
+
+    if (error) {
+      throw error;
+    }
+
+    return (data as FhirResourceRecord | null) ?? null;
+  },
+
   async create(payload: Omit<FhirResourceRecord, "created_at"> & { created_at?: string }) {
     const supabase = createSupabaseAdminClient();
     const record = {
@@ -116,5 +145,34 @@ export const fhirRepository = {
     }
 
     return (data as FhirResourceRecord | null) ?? null;
+  },
+
+  async delete(organizationId: string, id: string) {
+    const supabase = createSupabaseAdminClient();
+
+    if (!supabase) {
+      const index = mockFhirResources.findIndex(
+        (record) => record.organization_id === organizationId && record.id === id,
+      );
+
+      if (index < 0) {
+        return false;
+      }
+
+      mockFhirResources.splice(index, 1);
+      return true;
+    }
+
+    const { error, count } = await supabase
+      .from("fhir_resources")
+      .delete({ count: "exact" })
+      .eq("organization_id", organizationId)
+      .eq("id", id);
+
+    if (error) {
+      throw error;
+    }
+
+    return (count ?? 0) > 0;
   },
 };

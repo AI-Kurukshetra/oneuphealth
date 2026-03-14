@@ -30,10 +30,6 @@ function isActivePath(pathname: string, href: string) {
     return pathname === "/";
   }
 
-  if (href.includes("#")) {
-    return pathname === "/";
-  }
-
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
@@ -58,7 +54,7 @@ export function AppHeader({ navigation, session }: AppHeaderProps) {
 
         <nav className="flex flex-wrap items-center gap-2 lg:justify-center">
           {navigation.map((item) => {
-            const isActive = isActivePath(pathname, item.href);
+            const isActive = session.isAuthenticated ? isActivePath(pathname, item.href) : false;
 
             return (
               <Link
