@@ -11,6 +11,10 @@ export const providerService = {
     return providerRepository.listByOrganization(context.organizationId);
   },
 
+  async getProvider(context: RequestContext, id: string) {
+    return providerRepository.getById(context.organizationId, id);
+  },
+
   async createProvider(context: RequestContext, input: ProviderInput) {
     assertRole(context.role, ["admin", "provider"]);
     const payload = providerInputSchema.parse(input);
@@ -39,6 +43,47 @@ export const providerService = {
     await webhookService.emitEvent({
       organizationId: context.organizationId,
       event: "provider.created",
+      resourceType: "provider",
+      resourceId: provider.id,
+      payload: { providerId: provider.id },
+    });
+
+    return provider;
+  },
+
+  async updateProvider(context: RequestContext, id: string, input: ProviderInput) {
+    assertRole(context.role, ["admin", "provider"]);
+    const payload = providerInputSchema.parse(input);
+    const existingProvider = await providerRepository.getById(context.organizationId, id);
+
+    if (!existingProvider) {
+      throw new Error("Provider not found");
+    }
+
+    const provider = await providerRepository.update(context.organizationId, id, {
+      npi: payload.npi ?? null,
+      first_name: payload.firstName,
+      last_name: payload.lastName,
+      specialty: payload.specialty ?? null,
+      email: payload.email || null,
+      phone: payload.phone ?? null,
+    });
+
+    if (!provider) {
+      throw new Error("Provider update failed");
+    }
+
+    await auditService.log({
+      organizationId: context.organizationId,
+      userId: context.userId,
+      action: "provider.updated",
+      resourceType: "provider",
+      resourceId: provider.id,
+    });
+
+    await webhookService.emitEvent({
+      organizationId: context.organizationId,
+      event: "provider.updated",
       resourceType: "provider",
       resourceId: provider.id,
       payload: { providerId: provider.id },

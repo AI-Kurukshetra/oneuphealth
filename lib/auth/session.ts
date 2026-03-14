@@ -28,24 +28,10 @@ export async function getRequestContext(): Promise<RequestContext> {
     return apiKeyContext;
   }
 
-  const supabase = await createSupabaseServerClient();
-
-  if (!supabase) {
-    return demoContext;
-  }
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    throw new AuthenticationError("Authentication required");
-  }
-
-  const appUser = await userRepository.getByAuthUserId(user.id);
+  const appUser = await getSessionAppUser();
 
   if (!appUser) {
-    throw new AuthorizationError("Authenticated user is not provisioned in the application");
+    throw new AuthenticationError("Authentication required");
   }
 
   return {
@@ -69,31 +55,28 @@ export async function requirePageContext() {
 
 export async function getNavigationSession() {
   const headerStore = await headers();
-  const headerUserId = headerStore.get("x-user-id");
+  const headerContext = getHeaderContext(headerStore);
 
-  if (headerUserId) {
+  if (headerContext) {
+    const appUser = await userRepository.getById(headerContext.userId);
+
     return {
       isAuthenticated: true,
-      userId: headerUserId,
+      userId: headerContext.userId,
+      role: headerContext.role,
+      fullName: appUser?.full_name ?? null,
+      email: appUser?.email ?? null,
     };
   }
 
-  const supabase = await createSupabaseServerClient();
-
-  if (!supabase) {
-    return {
-      isAuthenticated: false,
-      userId: null,
-    };
-  }
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const appUser = await getSessionAppUser();
 
   return {
-    isAuthenticated: Boolean(user),
-    userId: user?.id ?? null,
+    isAuthenticated: Boolean(appUser),
+    userId: appUser?.id ?? null,
+    role: appUser?.role ?? null,
+    fullName: appUser?.full_name ?? null,
+    email: appUser?.email ?? null,
   };
 }
 
@@ -149,4 +132,28 @@ async function getApiKeyContext(headerStore: Headers): Promise<RequestContext | 
     userId: user.id,
     role: user.role,
   };
+}
+
+async function getSessionAppUser() {
+  const supabase = await createSupabaseServerClient();
+
+  if (!supabase) {
+    return demoContext.role ? await userRepository.getById(demoContext.userId) : null;
+  }
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return null;
+  }
+
+  const appUser = await userRepository.getByAuthUserId(user.id);
+
+  if (!appUser) {
+    throw new AuthorizationError("Authenticated user is not provisioned in the application");
+  }
+
+  return appUser;
 }

@@ -15,6 +15,11 @@ export const developerService = {
     return apiKeyRepository.listByOrganization(context.organizationId);
   },
 
+  async getApiKey(context: RequestContext, id: string) {
+    assertRole(context.role, ["admin", "developer"]);
+    return apiKeyRepository.getById(context.organizationId, id);
+  },
+
   async createApiKey(context: RequestContext, input: ApiKeyCreateInput) {
     assertRole(context.role, ["admin", "developer"]);
     const payload = apiKeyInputSchema.parse(input);
@@ -54,6 +59,43 @@ export const developerService = {
       apiKey,
       rawToken,
     };
+  },
+
+  async updateApiKey(context: RequestContext, id: string, input: ApiKeyCreateInput) {
+    assertRole(context.role, ["admin", "developer"]);
+    const payload = apiKeyInputSchema.parse(input);
+    const existingApiKey = await apiKeyRepository.getById(context.organizationId, id);
+
+    if (!existingApiKey) {
+      throw new Error("API key not found");
+    }
+
+    const apiKey = await apiKeyRepository.update(context.organizationId, id, {
+      name: payload.name,
+      permissions: payload.permissions,
+    });
+
+    if (!apiKey) {
+      throw new Error("API key update failed");
+    }
+
+    await auditService.log({
+      organizationId: context.organizationId,
+      userId: context.userId,
+      action: "api_key.updated",
+      resourceType: "api_key",
+      resourceId: apiKey.id,
+    });
+
+    await webhookService.emitEvent({
+      organizationId: context.organizationId,
+      event: "api_key.updated",
+      resourceType: "api_key",
+      resourceId: apiKey.id,
+      payload: { apiKeyId: apiKey.id, permissions: payload.permissions },
+    });
+
+    return apiKey;
   },
 
   async getUsageSummary(context: RequestContext) {

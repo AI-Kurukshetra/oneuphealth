@@ -1,9 +1,12 @@
 import { revalidatePath } from "next/cache";
 
+import { FhirEndpointTester } from "@/components/developer/FhirEndpointTester";
 import { ApiKeyManager } from "@/components/dashboard/ApiKeyManager";
 import { Card } from "@/components/ui/card";
 import { requirePageContext } from "@/lib/auth/session";
 import { developerService } from "@/services/developerService";
+
+const permissionOptions = ["fhir.read", "fhir.write", "webhooks.read", "webhooks.write", "analytics.read"];
 
 export default async function DeveloperPage() {
   const context = await requirePageContext();
@@ -18,9 +21,9 @@ export default async function DeveloperPage() {
     const actionContext = await requirePageContext();
     await developerService.createApiKey(actionContext, {
       name: String(formData.get("name") ?? ""),
-      permissions: String(formData.get("permissions") ?? "")
-        .split(",")
-        .map((value) => value.trim())
+      permissions: formData
+        .getAll("permissions")
+        .map((value) => String(value).trim())
         .filter(Boolean),
     });
 
@@ -31,14 +34,8 @@ export default async function DeveloperPage() {
     <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
       <div className="space-y-6">
         <ApiKeyManager apiKeys={apiKeys} />
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold">FHIR Endpoint Tester</h3>
-          <div className="mt-4 space-y-3 rounded-3xl bg-slate-950 p-5 text-sm text-slate-100">
-            <pre>GET /api/fhir/Patient/:id</pre>
-            <pre>POST /api/fhir/Patient</pre>
-            <pre>GET /api/fhir/Observation</pre>
-            <pre>POST /api/fhir/Encounter</pre>
-          </div>
+        <Card className="p-6 lg:p-7">
+          <FhirEndpointTester />
         </Card>
       </div>
       <div className="space-y-6">
@@ -51,11 +48,25 @@ export default async function DeveloperPage() {
               placeholder="Integration name"
               required
             />
-            <input
-              name="permissions"
-              className="w-full rounded-2xl border border-line px-4 py-3"
-              placeholder="fhir.read,fhir.write,webhooks.read"
-            />
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-ink" htmlFor="permissions">
+                Permissions
+              </label>
+              <select
+                id="permissions"
+                name="permissions"
+                multiple
+                defaultValue={["fhir.read", "fhir.write"]}
+                className="min-h-36 w-full rounded-2xl border border-line bg-white px-4 py-3 text-sm text-ink"
+              >
+                {permissionOptions.map((permission) => (
+                  <option key={permission} value={permission}>
+                    {permission}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-slate-500">Hold Ctrl or Cmd to select multiple permissions.</p>
+            </div>
             <button
               type="submit"
               className="rounded-full bg-ink px-4 py-3 text-sm font-semibold text-white"

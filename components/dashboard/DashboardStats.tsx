@@ -15,11 +15,11 @@ export function DashboardStats({ metrics }: DashboardStatsProps) {
   ];
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+    <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
       {items.map((item) => (
-        <Card key={item.label} className="p-6">
-          <p className="text-sm text-slate-500">{item.label}</p>
-          <p className="mt-3 text-3xl font-semibold">{item.value}</p>
+        <Card key={item.label} className="p-6 lg:p-7">
+          <p className="text-sm uppercase tracking-[0.18em] text-slate-500">{item.label}</p>
+          <p className="mt-4 text-3xl font-semibold text-ink">{item.value}</p>
         </Card>
       ))}
     </div>

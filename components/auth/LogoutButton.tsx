@@ -5,7 +5,11 @@ import { useState, useTransition } from "react";
 
 import { Button } from "@/components/ui/button";
 
-export function LogoutButton() {
+interface LogoutButtonProps {
+  className?: string;
+}
+
+export function LogoutButton({ className }: LogoutButtonProps) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -33,9 +37,15 @@ export function LogoutButton() {
   }
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="space-y-2">
       {error ? <p className="text-sm font-medium text-rose-600">{error}</p> : null}
-      <Button disabled={isPending} type="button" variant="secondary" onClick={handleLogout}>
+      <Button
+        className={className}
+        disabled={isPending}
+        type="button"
+        variant="secondary"
+        onClick={handleLogout}
+      >
         {isPending ? "Signing Out..." : "Logout"}
       </Button>
     </div>

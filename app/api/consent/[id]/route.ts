@@ -1,6 +1,6 @@
 import { apiError, ok, routeError } from "@/lib/api";
 import { getRequestContext } from "@/lib/auth/session";
-import { patientService } from "@/services/patientService";
+import { consentService } from "@/services/consentService";
 
 interface Params {
   params: Promise<{ id: string }>;
@@ -10,13 +10,13 @@ export async function GET(_: Request, { params }: Params) {
   try {
     const { id } = await params;
     const context = await getRequestContext();
-    const patient = await patientService.getPatient(context, id);
+    const consent = await consentService.getConsent(context, id);
 
-    if (!patient) {
-      return apiError("not_found", "Patient not found", 404);
+    if (!consent) {
+      return apiError("not_found", "Consent not found", 404);
     }
 
-    return ok({ data: patient });
+    return ok({ data: consent });
   } catch (error) {
     return routeError(error);
   }
@@ -26,8 +26,8 @@ export async function PUT(request: Request, { params }: Params) {
   try {
     const { id } = await params;
     const context = await getRequestContext();
-    const patient = await patientService.updatePatient(context, id, await request.json());
-    return ok({ data: patient });
+    const consent = await consentService.updateConsent(context, id, await request.json());
+    return ok({ data: consent });
   } catch (error) {
     return routeError(error);
   }

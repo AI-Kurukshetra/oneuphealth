@@ -23,6 +23,31 @@ export const consentRepository = {
     return data as Consent[];
   },
 
+  async getById(organizationId: string, id: string) {
+    const supabase = createSupabaseAdminClient();
+
+    if (!supabase) {
+      return (
+        mockConsents.find(
+          (consent) => consent.organization_id === organizationId && consent.id === id,
+        ) ?? null
+      );
+    }
+
+    const { data, error } = await supabase
+      .from("consents")
+      .select("*")
+      .eq("organization_id", organizationId)
+      .eq("id", id)
+      .maybeSingle();
+
+    if (error) {
+      throw error;
+    }
+
+    return (data as Consent | null) ?? null;
+  },
+
   async create(payload: Omit<Consent, "created_at"> & { created_at?: string }) {
     const supabase = createSupabaseAdminClient();
     const record = {
@@ -46,5 +71,40 @@ export const consentRepository = {
     }
 
     return data as Consent;
+  },
+
+  async update(
+    organizationId: string,
+    id: string,
+    payload: Partial<Omit<Consent, "id" | "organization_id" | "created_at">>,
+  ) {
+    const supabase = createSupabaseAdminClient();
+
+    if (!supabase) {
+      const consent = mockConsents.find(
+        (record) => record.organization_id === organizationId && record.id === id,
+      );
+
+      if (!consent) {
+        return null;
+      }
+
+      Object.assign(consent, payload);
+      return consent;
+    }
+
+    const { data, error } = await supabase
+      .from("consents")
+      .update(payload)
+      .eq("organization_id", organizationId)
+      .eq("id", id)
+      .select("*")
+      .maybeSingle();
+
+    if (error) {
+      throw error;
+    }
+
+    return (data as Consent | null) ?? null;
   },
 };

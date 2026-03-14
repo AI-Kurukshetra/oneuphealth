@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { Card } from "@/components/ui/card";
 import type { Provider } from "@/types/domain";
 
@@ -19,6 +21,7 @@ export function ProviderTable({ providers }: ProviderTableProps) {
               <th className="px-6 py-3">NPI</th>
               <th className="px-6 py-3">Specialty</th>
               <th className="px-6 py-3">Contact</th>
+              <th className="px-6 py-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -30,6 +33,14 @@ export function ProviderTable({ providers }: ProviderTableProps) {
                 <td className="px-6 py-4">{provider.npi ?? "N/A"}</td>
                 <td className="px-6 py-4">{provider.specialty ?? "N/A"}</td>
                 <td className="px-6 py-4">{provider.email ?? provider.phone ?? "N/A"}</td>
+                <td className="px-6 py-4 text-right">
+                  <Link
+                    href={`/providers/${provider.id}/edit`}
+                    className="rounded-full bg-ink px-4 py-2 text-xs font-semibold text-white"
+                  >
+                    Edit
+                  </Link>
+                </td>
               </tr>
             ))}
           </tbody>

@@ -72,4 +72,39 @@ export const patientRepository = {
 
     return data as Patient;
   },
+
+  async update(
+    organizationId: string,
+    id: string,
+    payload: Partial<Omit<Patient, "id" | "organization_id" | "created_at">>,
+  ) {
+    const supabase = createSupabaseAdminClient();
+
+    if (!supabase) {
+      const patient = mockPatients.find(
+        (record) => record.organization_id === organizationId && record.id === id,
+      );
+
+      if (!patient) {
+        return null;
+      }
+
+      Object.assign(patient, payload);
+      return patient;
+    }
+
+    const { data, error } = await supabase
+      .from("patients")
+      .update(payload)
+      .eq("organization_id", organizationId)
+      .eq("id", id)
+      .select("*")
+      .maybeSingle();
+
+    if (error) {
+      throw error;
+    }
+
+    return (data as Patient | null) ?? null;
+  },
 };

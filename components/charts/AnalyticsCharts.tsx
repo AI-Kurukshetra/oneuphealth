@@ -26,21 +26,21 @@ export function AnalyticsCharts({ metrics }: AnalyticsChartsProps) {
   ];
 
   return (
-    <Card className="p-6">
+    <Card className="p-6 lg:p-7">
       <div className="flex items-start justify-between gap-6">
         <div>
-          <h3 className="text-lg font-semibold">Interoperability Metrics</h3>
-          <p className="mt-1 text-sm text-slate-500">
+          <h3 className="text-lg font-semibold text-ink">Interoperability Metrics</h3>
+          <p className="mt-2 text-sm leading-6 text-slate-500">
             Consent opt-in rate: {formatPercentage(metrics.consentOptInRate)}
           </p>
         </div>
       </div>
-      <div className="mt-8 space-y-5">
+      <div className="mt-8 space-y-6">
         {bars.map((bar) => (
           <div key={bar.label}>
-            <div className="mb-2 flex items-center justify-between text-sm">
-              <span>{bar.label}</span>
-              <span className="font-semibold">{bar.value.toLocaleString()}</span>
+            <div className="mb-3 flex items-center justify-between text-sm">
+              <span className="text-slate-600">{bar.label}</span>
+              <span className="font-semibold text-ink">{bar.value.toLocaleString()}</span>
             </div>
             <div className="h-3 rounded-full bg-slate-100">
               <div

@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -18,16 +20,24 @@ export function ConsentManager({ consents, action }: ConsentManagerProps) {
         </div>
         <div className="divide-y divide-line">
           {consents.map((consent) => (
-            <div key={consent.id} className="flex items-center justify-between px-6 py-4">
+            <div key={consent.id} className="flex items-center justify-between gap-4 px-6 py-4">
               <div>
                 <p className="font-semibold">Patient {consent.patient_id}</p>
                 <p className="text-sm text-slate-500">
                   {consent.scope} · {consent.categories.join(", ")}
                 </p>
               </div>
-              <Badge tone={consent.status === "active" ? "success" : "warning"}>
-                {consent.status}
-              </Badge>
+              <div className="flex items-center gap-3">
+                <Badge tone={consent.status === "active" ? "success" : "warning"}>
+                  {consent.status}
+                </Badge>
+                <Link
+                  href={`/consent/${consent.id}/edit`}
+                  className="rounded-full bg-ink px-4 py-2 text-xs font-semibold text-white"
+                >
+                  Edit
+                </Link>
+              </div>
             </div>
           ))}
         </div>

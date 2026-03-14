@@ -82,4 +82,39 @@ export const fhirRepository = {
 
     return data as FhirResourceRecord;
   },
+
+  async update(
+    organizationId: string,
+    id: string,
+    payload: Partial<Pick<FhirResourceRecord, "resource" | "version">>,
+  ) {
+    const supabase = createSupabaseAdminClient();
+
+    if (!supabase) {
+      const resource = mockFhirResources.find(
+        (record) => record.organization_id === organizationId && record.id === id,
+      );
+
+      if (!resource) {
+        return null;
+      }
+
+      Object.assign(resource, payload);
+      return resource;
+    }
+
+    const { data, error } = await supabase
+      .from("fhir_resources")
+      .update(payload)
+      .eq("organization_id", organizationId)
+      .eq("id", id)
+      .select("*")
+      .maybeSingle();
+
+    if (error) {
+      throw error;
+    }
+
+    return (data as FhirResourceRecord | null) ?? null;
+  },
 };

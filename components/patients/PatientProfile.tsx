@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { Card } from "@/components/ui/card";
 import { formatDate } from "@/lib/utils";
 import type { Consent, FhirResourceRecord, Patient } from "@/types/domain";
@@ -16,9 +18,20 @@ export function PatientProfile({
   return (
     <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
       <Card className="p-6">
-        <h2 className="text-2xl font-semibold">
-          {patient.first_name} {patient.last_name}
-        </h2>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h2 className="text-2xl font-semibold">
+              {patient.first_name} {patient.last_name}
+            </h2>
+            <p className="mt-2 text-sm text-slate-500">Patient ID: {patient.id}</p>
+          </div>
+          <Link
+            href={`/patients/${patient.id}/edit`}
+            className="rounded-full bg-ink px-4 py-2 text-sm font-semibold text-white"
+          >
+            Edit Patient
+          </Link>
+        </div>
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
           <div>
             <p className="text-sm text-slate-500">Birth Date</p>

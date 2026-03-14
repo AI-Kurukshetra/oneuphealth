@@ -23,6 +23,30 @@ export const apiKeyRepository = {
     return data as ApiKey[];
   },
 
+  async getById(organizationId: string, id: string) {
+    const supabase = createSupabaseAdminClient();
+
+    if (!supabase) {
+      return (
+        mockApiKeys.find((apiKey) => apiKey.organization_id === organizationId && apiKey.id === id) ??
+        null
+      );
+    }
+
+    const { data, error } = await supabase
+      .from("api_keys")
+      .select("*")
+      .eq("organization_id", organizationId)
+      .eq("id", id)
+      .maybeSingle();
+
+    if (error) {
+      throw error;
+    }
+
+    return (data as ApiKey | null) ?? null;
+  },
+
   async getByHash(keyHash: string) {
     const supabase = createSupabaseAdminClient();
 
@@ -67,5 +91,40 @@ export const apiKeyRepository = {
     }
 
     return data as ApiKey;
+  },
+
+  async update(
+    organizationId: string,
+    id: string,
+    payload: Partial<Omit<ApiKey, "id" | "organization_id" | "user_id" | "key_prefix" | "key_hash" | "created_at">>,
+  ) {
+    const supabase = createSupabaseAdminClient();
+
+    if (!supabase) {
+      const apiKey = mockApiKeys.find(
+        (record) => record.organization_id === organizationId && record.id === id,
+      );
+
+      if (!apiKey) {
+        return null;
+      }
+
+      Object.assign(apiKey, payload);
+      return apiKey;
+    }
+
+    const { data, error } = await supabase
+      .from("api_keys")
+      .update(payload)
+      .eq("organization_id", organizationId)
+      .eq("id", id)
+      .select("*")
+      .maybeSingle();
+
+    if (error) {
+      throw error;
+    }
+
+    return (data as ApiKey | null) ?? null;
   },
 };

@@ -28,7 +28,12 @@ export async function createSupabaseServerClient() {
         };
 
         for (const item of items) {
-          mutableCookieStore.set?.(item.name, item.value, item.options);
+          try {
+            mutableCookieStore.set?.(item.name, item.value, item.options);
+          } catch {
+            // Server Components can read cookies but cannot mutate them.
+            // Route Handlers and Server Actions still apply these mutations.
+          }
         }
       },
     },
