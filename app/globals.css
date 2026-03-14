@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  @apply bg-mist text-ink antialiased;
+  background-image:
+    radial-gradient(circle at top left, rgba(14, 116, 144, 0.16), transparent 28%),
+    radial-gradient(circle at 85% 10%, rgba(16, 36, 62, 0.08), transparent 24%),
+    linear-gradient(180deg, #f8fbfd 0%, #edf4f8 100%);
+}
+
+a {
+  @apply text-inherit no-underline;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+input,
+textarea,
+select {
+  @apply outline-none;
+}
